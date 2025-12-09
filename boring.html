@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEN BRIDGE_PORTFOLIO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <!-- Importing VT323 for that retro terminal look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --term-bg: #000000;
+            --term-fg: #ffffff;
+            --term-green: #00ff00; /* Terminal Green (Used for main page headers, boxes) */
+            --term-acc: #333333;
+            --term-red: #ff0000; /* Terminal Red for error/close */
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background-color: var(--term-bg);
+            color: var(--term-fg);
+            overflow-x: hidden;
+            font-size: 1.1rem;
+            min-height: 100vh;
+        }
+
+        /* Scanline Background Effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 1px,
+                var(--term-green) 1px,
+                var(--term-green) 2px
+            );
+            background-size: 100% 4px;
+        }
+
+        /* Styling for terminal-like containers */
+        .terminal-box {
+            border: 3px solid var(--term-fg);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+            padding: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: flicker 0.1s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 0.99; }
+            100% { opacity: 1; }
+        }
+
+        h1, h2, h3, h4 {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            /* Note: We keep main page headers green */
+            color: var(--term-green);
+        }
+
+        /* Project Card Styling */
+        .project-card {
+            background-color: var(--term-bg);
+            border: 2px dashed var(--term-green);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            transition: all 0.2s;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            border-style: solid;
+            box-shadow: 0 0 15px var(--term-green);
+            cursor: pointer;
+        }
+        .card-image-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .card-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .project-card:hover .card-image-container img {
+            transform: scale(1.05);
+        }
+
+        /* Button Styling (Maintained green theme) */
+        .terminal-btn {
+            background: var(--term-green);
+            color: var(--term-bg);
+            border: 3px solid var(--term-green);
+            padding: 8px 16px;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 4px 4px 0px var(--term-fg);
+            transition: all 0.1s;
+        }
+        .terminal-btn:hover {
+            box-shadow: 6px 6px 0px var(--term-fg);
+        }
+        .terminal-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--term-fg);
+        }
+
+        /* Modal Specific Styling - BLACK */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(4px);
+        }
+        
+        .terminal-modal {
+            background: #ffffff;
+            color: #000000;
+            border: 4px solid #000000; /* Black border */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Dark shadow */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 60;
+        }
+
+        .scanline-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0) 50%,
+                rgba(0, 0, 0, 0.1) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.6;
+        }
+
+        .close-btn {
+            background: var(--term-red);
+            border: 2px solid var(--term-fg);
+            color: white;
+            transition: all 0.2s;
+            z-index: 20;
+        }
+        .close-btn:hover {
+            background: #ff4444;
+            color: #000;
+        }
+
+        .modal-header, .modal-media-section, .modal-content-area {
+            position: relative;
+            z-index: 5;
+        }
+        
+        .modal-header {
+            border-bottom: 3px solid #000000; /* Black separator */
+        }
+
+        .modal-media-section {
+            background: var(--term-bg);
+        }
+        
+        .modal-tool-tag {
+            background: #000000; /* Black background for tags */
+            color: #ffffff;
+            padding: 4px 8px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .modal-link-style {
+            color: #000000; /* Black color for links */
+            font-weight: bold;
+            text-decoration: none; 
+            border-bottom: 2px dashed #333333; /* Use dashed underline for retro effect */
+            text-transform: uppercase;
+            padding-bottom: 2px;
+        }
+        .modal-link-style:hover {
+            background: #000000; /* Black hover background */
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        /* Modal specific header/text */
+        .modal-text-black {
+            color: #000000; /* Black text for accents */
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: var(--term-acc); border-left: 2px solid var(--term-fg); }
+        ::-webkit-scrollbar-thumb { background: var(--term-green); border: 2px solid var(--term-bg); }
+    </style>
+</head>
+<body>
+
+    <!-- === MAIN PORTFOLIO LAYOUT === -->
+    <!-- The `relative` class here is important for positioning the "Cool Site" button -->
+    <div id="main-content" class="container mx-auto px-4 py-8 md:py-16 relative">
+        
+        <!-- === BUTTON LINK SECTION (Top Right) === -->
+        <div class="absolute top-4 right-4 md:top-4 md:right-4 z-10">
+            <!-- MARKED FOR USER: Change the href below to link to your other portfolio -->
+            <a href="YOUR_OTHER_PORTFOLIO_LINK_HERE" target="_blank" class="terminal-btn" id="external-link-button">
+                > Cool site
+            </a>
+        </div>
+
+        <!-- === HEADER / ABOUT SECTION === -->
+        <!-- Added pt-16 to ensure space for the button on smaller screens, and safe top margin on all screens -->
+        <header class="terminal-box mb-12 mt-[6rem] md:mt-[6rem]">
+            <div class="flex flex-col md:flex-row items-center">
+                <!-- Profile Image -->
+                <div class="w-24 h-24 flex-shrink-0 mb-4 md:mb-0 md:mr-6 p-1 border-2 border-white">
+                    <img id="profile-img" src="https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/Main%20Image.png" 
+                         class="w-full h-full object-contain" 
+                         onerror="this.src='https://placehold.co/96x96/000/FFF?text=USER_IMG'" 
+                         alt="Profile">
+                </div>
+                <div>
+                    <!-- REMOVED "UNIT" FROM ROLE -->
+                    <h1 class="text-4xl font-bold mb-2 text-white">> BEN BRIDGE_PORTFOLIO_V1.0</h1>
+                    <h2 class="text-2xl mb-4 text-green-400">STATUS: ONLINE / ROLE: GAME DESIGN</h2>
+                    <div id="about-description" class="text-gray-300 leading-relaxed">
+                        <!-- Content inserted by JS init() -->
+                    </div>
+                </div>
+            </div>
+            <!-- REMOVED VIEW_PROJECTS BUTTON -->
+        </header>
+
+        <!-- === PROJECTS SECTION === -->
+        <section id="projects" class="pt-8">
+            <h2 class="text-3xl font-bold mb-6 text-white terminal-box inline-block px-4 py-2">> PROJECTS_DIRECTORY</h2>
+            
+            <div id="project-list-container" class="space-y-12">
+                <!-- Project Categories and Cards will be rendered here by JS -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- === PROJECT POP-UP MODAL === -->
+    <div id="project-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop opacity-0 transition-opacity duration-300">
+        <div class="terminal-modal w-11/12 md:w-3/4 lg:w-2/3 h-[90vh]">
+            
+            <!-- Scanline Overlay - Covers entire modal content -->
+            <div class="scanline-overlay"></div>
+
+            <div class="modal-header p-4 flex justify-between items-center bg-white">
+                <h2 id="modal-title" class="text-xl md:text-2xl font-bold tracking-widest text-black">> UNKNOWN_PROJECT</h2>
+                <button onclick="closeModal()" class="close-btn w-8 h-8 flex items-center justify-center text-xl rounded-none"><i class="fas fa-times"></i></button>
+            </div>
+                
+            <div class="flex flex-col h-full overflow-y-auto z-5">
+                
+                <!-- Media Carousel -->
+                <div class="relative w-full aspect-video md:max-h-[50vh] flex-shrink-0 group modal-media-section border-b-2 border-black">
+                    <div id="carousel-container" class="w-full h-full flex items-center justify-center overflow-hidden"></div>
+                    <!-- Controls -->
+                    <button onclick="prevSlide()" class="carousel-btn left absolute top-1/2 -translate-y-1/2 p-3 bg-black text-white border-2 border-black hover:bg-black hover:text-white left-4"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="nextSlide()" class="carousel-btn right absolute top-1/2 -translate-y-1/2 p-3 bg-black text-white border-2 border-black hover:bg-black hover:text-white right-4"><i class="fas fa-chevron-right"></i></button>
+                    <div id="carousel-counter" class="absolute bottom-4 right-4 px-3 py-1 text-sm font-bold bg-white text-black border-2 border-black">1/1</div>
+                </div>
+
+                <!-- Body Content -->
+                <div class="p-6 md:p-8 space-y-6 modal-content-area bg-white text-black">
+                    <div class="text-base leading-relaxed" id="modal-description"></div>
+                    
+                    <!-- Details Section -->
+                    <div id="modal-details-container" class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4 pt-4 border-t-2 border-black">
+                        <div id="tools-section">
+                            <h4 class="text-xl font-bold mb-3 modal-text-black">> TOOLS_USED:</h4>
+                            <div id="modal-tools" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div id="links-section">
+                            <h4 class="text-xl font-bold mb-3 modal-text-black">> EXTERNAL_LINKS:</h4>
+                            <div id="modal-links" class="flex flex-col gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        /* =================================================================
+           CONTENT CONFIGURATION (Copied from original file)
+           =================================================================
+        */
+
+        const aboutData = {
+            title: "About Me",
+            mainImageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/Main%20Image.png", 
+            description: `
+                <p>> INITIATING HANDSHAKE PROTOCOL...</p>
+                <p class="mt-4">Welcome to my portfolio. I am a Game Designer & Developer specializing in Unreal Engine, System Design, and Gameplay Programming.</p>
+                <p class="mt-2">Browse the categories to view my projects, jams, and studies.</p>
+            `,
+            media: [] 
+        };
+
+        const categories = [
+            {
+                id: 'games',
+                name: 'Games',
+                mainImageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/GamesIcon.png",
+                projects: [
+                    {
+                        title: "Get to work",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/G1.png", // Using the first media item as main card image
+                        description: "Test",
+                        tools: ["Unreal engine", "Blender", "Substance Painter", "FMod"],
+                        links: [
+                            { label: "YouTube Trailer", url: "https://www.youtube.com/watch?v=Q4i2Zo3_O9M" }
+                        ],
+                        media: [
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/2G.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/3g.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/4g.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/5g.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/G1.png' }
+                        ]
+                    },
+                    {
+                        title: "Final Mission",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/1M.png",
+                        description: "Test",
+                        tools: ["Unreal engine", "Blender"],
+                        links: [
+                            { label: "YouTube Trailer", url: "https://www.youtube.com/watch?v=4m9GzfrXbVI" }
+                        ],
+                        media: [
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/3.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/4.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/5.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/6.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/1M.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/2M.png' }
+                        ]
+                    },
+                    {
+                        title: "Feed the Flames",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/F1.png",
+                        description: "Test",
+                        tools: ["Unreal engine", "Blender"],
+                        links: [
+                            { label: "YouTube Trailer", url: "https://www.youtube.com/watch?v=M2J2s9V462k" }
+                        ],
+                        media: [
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/F1.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/F2.png' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'jams',
+                name: 'Game Jams',
+                mainImageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/JamIcon.png",
+                projects: [
+                    {
+                        title: "Follow Me",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/FollowIcon.png",
+                        description: "test",
+                        tools: ["Dreams"],
+                        links: [
+                            { label: "YouTube Video", url: "https://www.youtube.com/watch?v=Do_GmHR2SQA" }
+                        ],
+                        media: []
+                    },
+                    {
+                        title: "I WANT POWER",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/3Y6qLW.jpg",
+                        description: "tst",
+                        tools: ["Unreal engine", "Blender"],
+                        links: [{ label: "Itch.io Page", url: "https://rot-soft.itch.io/i-want-power" }],
+                        media: [
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/3Y6qLW.jpg' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/ZHJ9t7.gif' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/zoomedinhorde.gif' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/zoomedouthorde.gif' }
+                        ]
+                    },
+                    {
+                        title: "Underneath",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/1.png",
+                        description: "test",
+                        tools: ["Unreal engine", "Blender"],
+                        links: [
+                            { label: "Itch.io Page", url: "https://rot-soft.itch.io/underneath" },
+                            { label: "YouTube Trailer", url: "https://www.youtube.com/watch?v=0Hkn8E5ZYKk" }
+                        ],
+                        media: [
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/1.png' },
+                            { type: 'img', src: 'https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/2.png' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'wip',
+                name: 'W.I.P',
+                mainImageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/WIPIcon.png",
+                projects: [
+                    {
+                        title: "ROT",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/Rot.png",
+                        description: "test (Work In Progress)",
+                        tools: [],
+                        links: [],
+                        media: [{ type: 'img', src: 'https://placehold.co/800x450/000/FFF?text=WIP:+NO+SCREENSHOTS+YET' }]
+                    },
+                    {
+                        title: "Untitled Crime Game",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/crime.png",
+                        description: "test (Work In Progress)",
+                        tools: [],
+                        links: [],
+                        media: [{ type: 'img', src: 'https://placehold.co/800x450/000/FFF?text=WIP:+NO+SCREENSHOTS+YET' }] 
+                    }
+                ]
+            },
+            {
+                id: 'studies',
+                name: 'Game Studies',
+                mainImageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/StudyIcon.png",
+                projects: [
+                    {
+                        title: "Psychonauts Abilities",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/Raz.png",
+                        description: "test (Analysis Document)",
+                        tools: ["Notepad++", "Miro"],
+                        links: [],
+                        media: [{ type: 'img', src: 'https://placehold.co/800x450/333/FFF?text=STUDY+DOCUMENT+COVER' }]
+                    },
+                    {
+                        title: "Plants Vs Zombies",
+                        imageUrl: "https://raw.githubusercontent.com/Rot-Soft1/PortfolioAssets/main/PVZ.png",
+                        description: "test (Analysis Document)",
+                        tools: ["Word", "Excel"],
+                        links: [],
+                        media: [{ type: 'img', src: 'https://placehold.co/800x450/333/FFF?text=STUDY+DOCUMENT+COVER' }]
+                    }
+                ]
+            }
+        ];
+
+        /* =================================================================
+           NEW SYSTEM LOGIC
+           =================================================================
+        */
+
+        const modal = document.getElementById('project-modal');
+        let currentSlide = 0, currentMedia = [];
+
+        // Main initialization function
+        function init() {
+            // Populate About Section
+            document.getElementById('about-description').innerHTML = aboutData.description;
+            
+            // Render all projects into the new list layout
+            renderProjectList();
+        }
+
+        // Renders all categories and projects as traditional scrollable cards
+        function renderProjectList() {
+            const listContainer = document.getElementById('project-list-container');
+            listContainer.innerHTML = ''; // Clear existing content
+
+            categories.forEach(cat => {
+                // Category Header
+                const catHeader = document.createElement('h3');
+                catHeader.className = 'text-2xl font-bold mt-10 mb-6 text-green-400 border-b-2 border-green-500 pb-2';
+                catHeader.innerHTML = `> DIR: ${cat.name.toUpperCase()}`;
+                listContainer.appendChild(catHeader);
+
+                // Project Cards Grid
+                const projectsGrid = document.createElement('div');
+                projectsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+                
+                cat.projects.forEach(proj => {
+                    const card = createProjectCard(proj, cat.name);
+                    projectsGrid.appendChild(card);
+                });
+
+                listContainer.appendChild(projectsGrid);
+            });
+        }
+        
+        // Creates a single project card element
+        function createProjectCard(proj, categoryName) {
+            const card = document.createElement('div');
+            card.className = 'project-card flex flex-col overflow-hidden';
+            card.onclick = () => openModal(proj, categoryName);
+
+            // Use the first media item as the card image for a prominent screenshot look
+            const cardImageUrl = (proj.media && proj.media.length > 0) ? proj.media[0].src : proj.imageUrl;
+
+            card.innerHTML = `
+                <div class="card-image-container aspect-video flex-shrink-0">
+                    <img src="${cardImageUrl}" alt="${proj.title} Screenshot" 
+                         onerror="this.src='https://placehold.co/400x225/333/FFF?text=NO+PREVIEW'"
+                         class="object-cover w-full h-full">
+                </div>
+                <div class="p-4 flex-grow">
+                    <h4 class="text-xl font-bold mb-2 text-white">${proj.title}</h4>
+                    <!-- Description removed per user request -->
+                    <div class="flex flex-wrap gap-1">
+                        ${proj.tools.map(t => `<span class="bg-gray-800 text-green-400 text-xs px-2 py-1">${t}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+
+        // --- MODAL LOGIC (Mostly retained from original) ---
+        function openModal(data, catName) {
+            document.getElementById('modal-title').textContent = `> ${data.title}`;
+            document.getElementById('modal-description').innerHTML = data.description;
+
+            // Tools
+            const toolsSec = document.getElementById('tools-section');
+            const toolContainer = document.getElementById('modal-tools');
+            toolContainer.innerHTML = '';
+            if(data.tools && data.tools.length > 0) {
+                toolsSec.parentElement.classList.remove('hidden');
+                // Note: modal-tool-tag CSS now uses black background
+                toolContainer.innerHTML = data.tools.map(t => `<span class="modal-tool-tag">${t}</span>`).join('');
+            } else { toolsSec.parentElement.classList.add('hidden'); } // Hide entire section if no tools or links
+
+            // Links
+            const linksSec = document.getElementById('links-section');
+            const linkContainer = document.getElementById('modal-links');
+            linkContainer.innerHTML = '';
+            if(data.links && data.links.length > 0) {
+                linksSec.parentElement.classList.remove('hidden');
+                // Note: modal-link-style CSS now uses black text and dashed underline
+                linkContainer.innerHTML = data.links.map(l => `<a href="${l.url}" target="_blank" class="modal-link-style flex items-center"><i class="fas fa-external-link-alt mr-2 modal-text-black"></i> [ ${l.label} ]</a>`).join('');
+            } else { linksSec.parentElement.classList.add('hidden'); } // Hide entire section if no tools or links
+
+            // Media Carousel
+            currentMedia = data.media || [];
+            if (currentMedia.length === 0) {
+                currentMedia = [{ type: 'img', src: data.imageUrl || data.mainImageUrl }];
+            }
+            currentSlide = 0;
+            renderCarousel();
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeModal() { 
+            modal.classList.add('opacity-0'); 
+            setTimeout(() => modal.classList.add('hidden'), 300); 
+            // Pause any running videos when closing
+            const video = document.querySelector('#carousel-container video');
+            if (video) video.pause();
+        }
+        
+        function renderCarousel() {
+            const c = document.getElementById('carousel-container');
+            const item = currentMedia[currentSlide];
+            
+            // Check if controls should be visible
+            document.querySelector('.carousel-btn.left').style.display = currentMedia.length > 1 ? 'flex' : 'none';
+            document.querySelector('.carousel-btn.right').style.display = currentMedia.length > 1 ? 'flex' : 'none';
+            
+            // Note: counter border updated to black in HTML
+            document.getElementById('carousel-counter').innerText = `${currentSlide + 1}/${currentMedia.length}`;
+
+            if (item.type === 'video') {
+                // Added a max-h-full to ensure it fits nicely
+                c.innerHTML = `<video src="${item.src}" controls autoplay loop class="w-full h-full object-contain max-h-[50vh] bg-black"></video>`;
+            } else {
+                // Added object-contain for full visibility and bg-black for border-like effect
+                c.innerHTML = `<img src="${item.src}" class="w-full h-full object-contain max-h-[50vh] bg-black" onerror="this.src='https://placehold.co/800x450/000/FFF?text=NO+IMAGE';">`;
+            }
+        }
+        window.nextSlide = () => { currentSlide = (currentSlide+1)%currentMedia.length; renderCarousel(); };
+        window.prevSlide = () => { currentSlide = (currentSlide-1+currentMedia.length)%currentMedia.length; renderCarousel(); };
+        
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
